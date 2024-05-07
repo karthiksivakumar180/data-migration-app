@@ -1,5 +1,11 @@
 fastapi
 uvicorn
-pyodbc
+wheel
+setuptools
+jaydebeapi
+
+# pyodbc
 httpx
-dotenv
+# dotenv
+APScheduler
+scheduler

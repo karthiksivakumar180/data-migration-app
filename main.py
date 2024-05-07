@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from database import connect_to_db
-import pyodbc
+# import pyodbc
+from cron.index import start_scheduler
 
 app = FastAPI()
 
@@ -16,11 +17,20 @@ async def read_root():
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM your_table")
             rows = cursor.fetchall()
-            result = [{"column1": row.column1, "column2": row.column2} for row in rows]
+            # Extract column names
+            columns = [column[0] for column in cursor.description]
+            
+            # Fetch rows and convert them to key-value pairs
+            rows = cursor.fetchall()
+            result = [{column: value for column, value in zip(columns, row)} for row in rows]
+            
             cursor.close()
             conn.close()
             return {"data": result}
-        except pyodbc.Error as e:
+        except Exception as e:
             return {"error": str(e)}
     else:
         return {"error": "Failed to establish database connection"}
+
+# if __name__ == "__main__":
+start_scheduler()
