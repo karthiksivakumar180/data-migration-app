@@ -1,4 +1,4 @@
-uvicorn
-ibm_db
-httpx
 fastapi
+uvicorn
+pyodbc
+httpx
