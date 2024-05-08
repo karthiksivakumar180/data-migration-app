@@ -1,11 +1,18 @@
 from fastapi import FastAPI
 from database import connect_to_db
 # import pyodbc
+import os
 from cron.index import start_scheduler
 
 app = FastAPI()
 
-
+# Manually load environment variables from .env file
+with open(".env") as f:
+    for line in f:
+        if line.strip() and not line.startswith("#"):
+            key, value = line.strip().split("=", 1)
+            os.environ[key] = value
+            
 @app.get("/")
 async def read_root():
     print("route new")
