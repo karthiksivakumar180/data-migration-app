@@ -5,6 +5,7 @@ import os
 from cron.index import start_scheduler
 
 app = FastAPI()
+#https://663b1359fee6744a6ea0354b.mockapi.io/api/v1/contacts/create
 
 # Manually load environment variables from .env file
 with open(".env") as f:
