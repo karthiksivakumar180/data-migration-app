@@ -1,10 +1,10 @@
 import os
-import pyodbc
+
 
 # Load environment variables
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 
 def connect_to_db():
@@ -14,13 +14,13 @@ def connect_to_db():
     db_host = os.getenv("DB_HOST")
     db_port = os.getenv("DB_PORT")
     db_name = os.getenv("DB_NAME")
-
+    
     try:
         # Establish DB2 connection
         conn_str = f"DSN={db_host};DATABASE={db_name};UID={db_user};PWD={db_password}"
-        conn = pyodbc.connect(conn_str)
+        conn = True
         return conn
-    except pyodbc.Error as e:
+    except Exception as e:
         print("Error connecting to DB2:", e)
         return None
 
