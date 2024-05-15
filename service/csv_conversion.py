@@ -1,7 +1,8 @@
 import pandas as pd
 import io
 
-
+ 
+chunk_df['id'] = [uuid.uuid4() for _ in range(len(chunk_df))]
 df_bytes = df.to_csv(index=False).encode()
 chunk_size = 100 * 1024 * 1024  # 100MB in bytes
 
