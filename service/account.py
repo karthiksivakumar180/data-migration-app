@@ -19,7 +19,9 @@ async def create_job():
         "externalIdFieldName": "EXT_ID__c",
         "contentType": "CSV",
         "operation": "upsert",
-        "lineEnding": "CRLF",
+        # "lineEnding": "CRLF",
+        "lineEnding": "LF",
+        
     }
     header = {"Content-Type": "application/json"}
     create_job_response, _ = await send_post_request(
@@ -102,5 +104,6 @@ async def update_job(batch_id: str, status: str = "UploadComplete"):
     update_job_response, _ = await send_post_request(
         url, "PATCH", post_data, None, None, {"Content-Type": "application/json"}
     )
+    print("update_job_response",update_job_response)
     return update_job_response
     # prev_batch_id = match.group(1)
