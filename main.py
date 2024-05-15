@@ -25,7 +25,7 @@ async def read_root():
     print("route new")
     # Establish database connection
     # return await get_patch_info("750H1000005JFsQIAW")
-    await create_job()
+    return await create_job()
     return {"error": "Failed to establish database connection"}
 
 

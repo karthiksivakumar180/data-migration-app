@@ -79,8 +79,10 @@ async def set_auth_token():
     return dict_resp
 
 
-async def send_get_request(url, params=None):
+async def send_get_request(url, params=None,headers=None):
     get_header = await set_auth_token()
+    if headers:
+        get_header.update(get_header)
     async with httpx.AsyncClient() as client:
         try:
             full_url = f"{BASE_URL}{url}"
