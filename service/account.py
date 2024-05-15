@@ -7,9 +7,11 @@ ACCCOUNT_SUB_URL = "/data/v58.0/jobs/ingest"
 JOB_STATUS_LIST = ["Open", "UploadComplete", "Aborted", "JobComplete", "Failed"]
 
 SAMPLE_DATA = [
-                {"LastName": "jacky", "EXT_ID__c": 32453253230012},
-                {"LastName": "roopin", "EXT_ID__c": 3245325320013},
-            ]
+    {"LastName": "jacky", "EXT_ID__c": 32453253230012},
+    {"LastName": "roopin", "EXT_ID__c": 3245325320013},
+]
+
+
 async def create_job():
     url = ACCCOUNT_SUB_URL
     post_data = {
@@ -29,7 +31,7 @@ async def create_job():
     if create_job_response is not None:
         batch_id = create_job_response.get("id", None)
         if batch_id is not None:
-            
+
             file, file_type = await convert_json_to_file(SAMPLE_DATA)
             # file=await convert_json_to_binary(sample_data)
             print("batch id", batch_id)
@@ -39,7 +41,7 @@ async def create_job():
 async def csv_import(batch_id: str, csv_file):
     url_format = f"{ACCCOUNT_SUB_URL}/{batch_id}/batches/"
     file_data = str(csv_file)
-    print("file_data",file_data)
+    print("file_data", file_data)
     header = {"Content-Type": "text/csv", "Accept": "application/json"}
     csv_import_response, response_code = await send_post_request(
         url_format, "PUT", file_data, None, None, header
@@ -57,9 +59,10 @@ async def csv_import(batch_id: str, csv_file):
         prev_batch_id = await get_batch_id_from_error(error_message)
         if prev_batch_id is not None:
             update_job_resp = await update_job(prev_batch_id)
-            # print("update_job_resp", update_job_resp)
             if "id" in update_job_resp:
                 print("Job ID:", prev_batch_id)
+    if response_code == 201:
+        await update_job(batch_id, "UploadComplete")
 
 
 async def get_patch_unprocessed(batch_id: str):
@@ -94,7 +97,7 @@ async def get_patch_failed_result(batch_id: str):
 
 async def update_job(batch_id: str, status: str = "UploadComplete"):
     url = f"{ACCCOUNT_SUB_URL}/{batch_id}"
-    post_data = {"state": "UploadComplete"}
+    post_data = {"state": status}
 
     update_job_response, _ = await send_post_request(
         url, "PATCH", post_data, None, None, {"Content-Type": "application/json"}
