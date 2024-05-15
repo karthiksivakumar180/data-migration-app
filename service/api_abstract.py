@@ -2,7 +2,7 @@ import httpx, os, requests
 from fastapi import HTTPException, status
 from config import settings
 
-AUTH_TOKEN = None
+# AUTH_TOKEN = None
 BASE_URL = settings.BASE_URL
 # HEADERS = {"Authorization": f"Bearer {AUTH_TOKEN}"}
 
@@ -73,8 +73,8 @@ async def set_auth_token():
     if auth_response.status_code == 200:
         # print("auth_response", auth_response.text)
         if dict_resp and "access_token" in dict_resp:
-            AUTH_TOKEN = dict_resp["access_token"]
-            return {"Authorization": f"Bearer {AUTH_TOKEN}"}
+            auth_token = dict_resp["access_token"]
+            return {"Authorization": f"Bearer {auth_token}"}
     # print("AUTH_TOKEN", AUTH_TOKEN)
     return dict_resp
 
@@ -88,7 +88,7 @@ async def send_get_request(url, params=None):
             response = await client.get(
                 full_url, params=params, headers=get_header, timeout=20
             )
-            return response
+            return  response.json() if response.text  else None
         except httpx.HTTPError as exc:
             print("HTTP error:", exc)
             return None
@@ -98,60 +98,113 @@ async def send_get_request(url, params=None):
 
 
 async def send_post_request(
-    url, method="POST", data=None, files=None, params=None, header=None
+    url, method="POST", data=None, files=None, params=None, new_headers=None
 ):
-    post_header = await set_auth_token()
-    # print("data", type(data))
-    if header:
-        post_header.update(header)
+    try:
+        # Set the request headers
+        headers = await set_auth_token()
+        if new_headers:
+            headers.update(new_headers)
 
-    async with httpx.AsyncClient() as client:
-        try:
+        # Validate the HTTP method
+        method = method.upper()
+        if method not in ["POST", "PUT", "PATCH"]:
+            raise ValueError(
+                "Unsupported HTTP method. Please use 'POST', 'PATCH', or 'PUT'."
+            )
+
+        async with httpx.AsyncClient() as client:
             full_url = f"{BASE_URL}{url}"
-            # print("method post", method)
-            # print("full_url post", full_url)
-            # print("data", data)
-            # print("params", params)
-            # print("HEADERS", post_header)
-            if method.upper() not in ["POST", "PUT", "PATCH"]:
-                raise ValueError(
-                    "Unsupported HTTP method. Please use 'POST','PATCH' or 'PUT'."
-                )
-
-            if method.upper() == "POST":
+            if method == "POST":
                 response = await client.post(
                     full_url,
                     json=data,
                     params=params,
                     files=files,
-                    headers=post_header,
+                    headers=headers,
                     timeout=20,
                 )
-            elif method.upper() == "PUT":
+            elif method == "PUT":
                 response = await client.put(
                     full_url,
-                    json=data,
+                    data=data,
                     params=params,
                     files=files,
-                    headers=post_header,
+                    headers=headers,
                     timeout=20,
                 )
-            elif method.upper() == "PATCH":
+            elif method == "PATCH":
                 response = await client.patch(
                     full_url,
                     json=data,
                     params=params,
                     files=files,
-                    headers=post_header,
+                    headers=headers,
                     timeout=20,
                 )
-            return response.json()
-        except httpx.HTTPError as exc:
-            print("HTTP error:", exc)
-            return None
-        except Exception as exc:
-            print("An error occurred:", exc)
-            return None
+            #print("response", response.text)
+            response_data = None
+            if response.text:
+                response_data = response.json()
+            #print("response.status_code", response.status_code)
+            return response_data, response.status_code
+    except httpx.HTTPError as exc:
+        print("HTTP error:", exc)
+        return None, None
+    except Exception as exc:
+        print("An error occurred:", exc)
+        return None, None
+
+
+# async def send_post_request(
+#     url, method="POST", data=None, files=None, params=None, header=None
+# ):
+#     post_header = await set_auth_token()
+#     if header:
+#         post_header.update(header)
+
+#     async with httpx.AsyncClient() as client:
+#         try:
+#             full_url = f"{BASE_URL}{url}"
+#             if method.upper() not in ["POST", "PUT", "PATCH"]:
+#                 raise ValueError(
+#                     "Unsupported HTTP method. Please use 'POST','PATCH' or 'PUT'."
+#                 )
+
+#             if method.upper() == "POST":
+#                 response = await client.post(
+#                     full_url,
+#                     json=data,
+#                     params=params,
+#                     files=files,
+#                     headers=post_header,
+#                     timeout=20,
+#                 )
+#             elif method.upper() == "PUT":
+#                 response = await client.put(
+#                     full_url,
+#                     data=data,
+#                     params=params,
+#                     files=files,
+#                     headers=post_header,
+#                     timeout=20,
+#                 )
+#             elif method.upper() == "PATCH":
+#                 response = await client.patch(
+#                     full_url,
+#                     json=data,
+#                     params=params,
+#                     files=files,
+#                     headers=post_header,
+#                     timeout=20,
+#                 )
+#             return response.json(), response.status_code
+#         except httpx.HTTPError as exc:
+#             print("HTTP error:", exc)
+#             return None
+#         except Exception as exc:
+#             print("An error occurred:", exc)
+#             return None
 
 
 # https://mrfcorplimited--oidev.sandbox.my.salesforce.com/services/data/v58.0/jobs/ingest/

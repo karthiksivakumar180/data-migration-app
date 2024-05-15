@@ -1,9 +1,10 @@
-from service.api_abstract import send_post_request
+from service.api_abstract import send_post_request,send_get_request
 from service.csv_conversion import convert_json_to_file
 import re
-from utils.helpers import get_batch_id_from_error
+from utils.helpers import get_batch_id_from_error, convert_json_to_binary
 
 ACCCOUNT_SUB_URL = "/data/v58.0/jobs/ingest"
+JOB_STATUS_LIST = ["Open", "UploadComplete", "Aborted", "JobComplete", "Failed"]
 
 
 async def create_job():
@@ -16,30 +17,33 @@ async def create_job():
         "lineEnding": "CRLF",
     }
     header = {"Content-Type": "application/json"}
-    # create_job_response = await send_post_request(
-    #     url, "POST", post_data, None, None, header
-    # )
-    create_job_response = {"id": "750H1000005JFA4IAO"}
+    create_job_response, _ = await send_post_request(
+        url, "POST", post_data, None, None, header
+    )
+    # create_job_response = {"id": "750H1000005JFbZIAW"}
     print("create_job_response", create_job_response)
+    # return
     if create_job_response is not None:
         batch_id = create_job_response.get("id", None)
         if batch_id is not None:
             sample_data = [
-                {"LastName": "test2", "EXT_ID__c": 3245325323},
-                {"LastName": "test1", "EXT_ID__c": 324532532},
+                {"LastName": "test0001", "EXT_ID__c": 3245325323001},
+                {"LastName": "test002", "EXT_ID__c": 324532532001},
             ]
-            file, _ = await convert_json_to_file(sample_data)
+            file, file_type = await convert_json_to_file(sample_data)
+            # file=await convert_json_to_binary(sample_data)
             print("batch id", batch_id)
             await csv_import(batch_id, file)
 
 
 async def csv_import(batch_id: str, csv_file):
     url_format = f"{ACCCOUNT_SUB_URL}/{batch_id}/batches/"
-    file_data = {"file": csv_file}
-    header = {"Content-Type": "text/csv"}
-    csv_import_response = await send_post_request(
-        url_format, "PUT", None, file_data, None, header
+    file_data = str(csv_file)
+    header = {"Content-Type": "text/csv", "Accept": "application/json"}
+    csv_import_response, response_code = await send_post_request(
+        url_format, "PUT", file_data, None, None, header
     )
+    print("csv_import_response code", response_code)
     print("csv_import_response", csv_import_response)
     if (
         csv_import_response
@@ -52,24 +56,31 @@ async def csv_import(batch_id: str, csv_file):
         prev_batch_id = await get_batch_id_from_error(error_message)
         if prev_batch_id is not None:
             update_job_resp = await update_job(prev_batch_id)
-            print("update_job_resp", update_job_resp)
+            # print("update_job_resp", update_job_resp)
             if "id" in update_job_resp:
                 print("Job ID:", prev_batch_id)
 
 
+async def get_patch_info(batch_id: str):
+    get_batch_info_url = f"{ACCCOUNT_SUB_URL}/{batch_id}/"
+    batch_data=await send_get_request(get_batch_info_url)
+    print("batch_data",batch_data)    
+    return batch_data
+
+
 async def get_patch_success(batch_id: str):
-    url = f"{ACCCOUNT_SUB_URL}/{batch_id}/successfulResults/"
+    get_batch_success_url = f"{ACCCOUNT_SUB_URL}/{batch_id}/successfulResults/"
 
 
 async def get_patch_failed_result(batch_id: str):
-    url = f"{ACCCOUNT_SUB_URL}{batch_id}/failedResults/"
+    get_batch_failed_url = f"{ACCCOUNT_SUB_URL}{batch_id}/failedResults/"
 
 
 async def update_job(batch_id: str, status: str = "UploadComplete"):
     url = f"{ACCCOUNT_SUB_URL}/{batch_id}"
     post_data = {"state": "UploadComplete"}
 
-    update_job_response = await send_post_request(
+    update_job_response, _ = await send_post_request(
         url, "PATCH", post_data, None, None, {"Content-Type": "application/json"}
     )
     return update_job_response

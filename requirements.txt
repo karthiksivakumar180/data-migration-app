@@ -3,9 +3,12 @@ uvicorn
 wheel
 setuptools
 jaydebeapi
-
+matplotlib
+pandas
 # pyodbc
 httpx
 # dotenv
 APScheduler
 scheduler
+requests
+pydantic-settings
