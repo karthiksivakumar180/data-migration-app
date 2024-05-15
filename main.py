@@ -12,12 +12,12 @@ app = FastAPI()
 # https://663b1359fee6744a6ea0354b.mockapi.io/api/v1/contacts/create
 
 # Manually load environment variables from .env file
-with open(".env") as f:
-    for line in f:
-        if line.strip() and not line.startswith("#"):
-            key, value = line.strip().split("=", 1)
-            # print("key",key,"value",value)
-            os.environ[key] = value
+# with open(".env") as f:
+#     for line in f:
+#         if line.strip() and not line.startswith("#"):
+#             key, value = line.strip().split("=", 1)
+#             # print("key",key,"value",value)
+#             os.environ[key] = value
 
 
 @app.get("/sales_district")
