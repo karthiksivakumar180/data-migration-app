@@ -2,6 +2,19 @@ import pandas as pd
 import io
 
 
+df_bytes = df.to_csv(index=False).encode()
+chunk_size = 100 * 1024 * 1024  # 100MB in bytes
+
+# Chunk the DataFrame
+chunks = []
+start = 0
+while start < len(df_bytes):
+    end = start + chunk_size
+    chunk_data = df_bytes[start:end].decode()
+    chunk_df = pd.read_csv(pd.compat.StringIO(chunk_data))
+    chunks.append(chunk_df)
+    start = end
+    
 async def convert_json_to_file(json_data, file_format="csv"):
     # Convert JSON data to Pandas DataFrame
     df = pd.DataFrame(json_data)
