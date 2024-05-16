@@ -1,6 +1,10 @@
 from database import connect_to_db
 
+account_query="select * from KNA1 a left join KNB1 b on a.KUNNR = b.KUNNR and b.BUKRS = 1101 left join KNVV c on a.KUNNR = c.KUNNR and c.VKORG = 1101"
+
+
 TABLE_REFERENCE = {
+    
     "sales_district": {"table": "T171", "view": "T171_SF", "where": None},
     "sales_group": {"table": "TVKGR", "view": "TVKGR_SF", "where": None},
     "plant": {"table": "T001W", "view": "T001W_SF", "where": "VKORG = '1101'"},
@@ -15,8 +19,8 @@ TABLE_REFERENCE = {
     "product_master_2": {"table": "MAKT", "view": "MAKT_SF", "where": None},
     "product_master_3": {"table": "MARC", "view": "", "where": "WERKS like 3*, 9*"},
     "customer_master_1": {"table": "KNA1", "view": "KNA1_SF", "where": None},
-    "product_master_2": {"table": "KNB1", "view": "KNB1_SF", "where": 'BUKRS ="1101"'},
-    "product_master_3": {"table": "KNVV", "view": "KNVV_SF", "where": 'VKORG = "1101"'},
+    "customer_master_2": {"table": "KNB1", "view": "KNB1_SF", "where": 'BUKRS ="1101"'},
+    "customer_master_3": {"table": "KNVV", "view": "KNVV_SF", "where": 'VKORG = "1101"'},
     "changes": {"table": "CDHDR", "view": "CDHDR_SF", "where": 'TCODE ="XD02", "MM02"'},
     "billing": {
         "table": "VBRK",
