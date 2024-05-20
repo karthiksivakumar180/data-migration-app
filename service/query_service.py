@@ -70,6 +70,8 @@ def get_column_alias_mapping(query):
     select_part = query.lower().split("from")[0].replace("select", "").strip()
     for col_alias in select_part.split(","):
         col, alias = [part.strip() for part in col_alias.split(" as ")]
+        if '.' in alias:
+            alias = alias.split('.')[-1]
         column_alias_mapping[col] = alias
     return column_alias_mapping
 
