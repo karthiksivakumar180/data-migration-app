@@ -64,6 +64,14 @@ TABLE_REFERENCE = {
     },
 }
 
+def get_column_alias_mapping(query):
+    # Extract columns and their aliases from the query
+    column_alias_mapping = {}
+    select_part = query.lower().split("from")[0].replace("select", "").strip()
+    for col_alias in select_part.split(","):
+        col, alias = [part.strip() for part in col_alias.split(" as ")]
+        column_alias_mapping[col] = alias
+    return column_alias_mapping
 
 def execute_dynamic_query(table_name, dynamic_where=None, page_number=1, page_size=10):
     conn = connect_to_db()
@@ -84,6 +92,7 @@ def execute_dynamic_query(table_name, dynamic_where=None, page_number=1, page_si
             rows = cursor.fetchall()
             # Extract column names
             columns = [column[0] for column in cursor.description]
+            
             result = [
                 {column: value for column, value in zip(columns, row)} for row in rows
             ]
