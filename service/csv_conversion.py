@@ -1,17 +1,14 @@
 import pandas as pd
-import io
+import io,os
 
-keys_to_select = ["name", "city"]
+async def ensure_directory_exists(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
 
-# Select specific columns
-selected_chunk_df = chunk_df[keys_to_select]
-
-# Convert selected chunk DataFrame to JSON
-chunk_json = selected_chunk_df.to_json(orient='records')
-    
-chunk_df['id'] = [uuid.uuid4() for _ in range(len(chunk_df))]
-df_bytes = df.to_csv(index=False).encode()
-chunk_size = 100 * 1024 * 1024  # 100MB in bytes
+# Usage example:
+directory_path = 'Account'
+ensure_directory_exists(directory_path)
+csv_file_path = os.path.join(directory_path, '750H000005JtGsJ6A.csv')
 
 # Chunk the DataFrame
 chunks = []
