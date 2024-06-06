@@ -64,15 +64,43 @@ TABLE_REFERENCE = {
     },
 }
 
+# def get_column_alias_mapping(query):
+#     # Extract columns and their aliases from the query
+#     column_alias_mapping = {}
+#     select_part = query.lower().split("from")[0].replace("select", "").strip()
+#     for col_alias in select_part.split(","):
+#         col, alias = [part.strip() for part in col_alias.split(" as ")]
+#         if '.' in alias:
+#             alias = alias.split('.')[-1]
+#         column_alias_mapping[col] = alias
+#     return column_alias_mapping
+
 def get_column_alias_mapping(query):
     # Extract columns and their aliases from the query
     column_alias_mapping = {}
+    alias_count = {}
+
     select_part = query.lower().split("from")[0].replace("select", "").strip()
     for col_alias in select_part.split(","):
-        col, alias = [part.strip() for part in col_alias.split(" as ")]
-        if '.' in alias:
-            alias = alias.split('.')[-1]
+        col_alias = col_alias.strip()
+        
+        # Split column and alias
+        if " as " in col_alias:
+            col, alias = [part.strip() for part in col_alias.split(" as ")]
+        else:
+            col = col_alias
+            alias = col_alias.split(".")[-1]  # Default alias is the column name itself
+
+        # Ensure unique aliases
+        original_alias = alias
+        count = alias_count.get(alias, 0)
+        while alias in column_alias_mapping.values():
+            count += 1
+            alias = f"{original_alias}_{count}"
+        alias_count[original_alias] = count
+
         column_alias_mapping[col] = alias
+
     return column_alias_mapping
 
 def execute_dynamic_query(table_name, dynamic_where=None, page_number=1, page_size=10):
