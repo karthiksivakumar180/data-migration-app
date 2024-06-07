@@ -110,6 +110,22 @@ async def get_column_alias_mapping_1(query):
 
     return column_alias_mapping
 
+async def get_unique_columns(cursor_description):
+    columns = [column[0] for column in cursor_description]
+    unique_columns = []
+    column_count = {}
+
+    for col in columns:
+        if col in column_count:
+            column_count[col] += 1
+            unique_col = f"{col}_{column_count[col]}"
+        else:
+            column_count[col] = 0
+            unique_col = col
+
+        unique_columns.append(unique_col)
+
+    return unique_columns
 
 def get_column_alias_mapping(query):
     # Extract columns and their aliases from the query
