@@ -79,6 +79,38 @@ TABLE_REFERENCE = {
 #     return column_alias_mapping
 
 
+async def get_column_alias_mapping_1(query):
+    # Extract columns and their aliases from the query
+    column_alias_mapping = {}
+    alias_count = {}
+
+    select_part = query.split("from")[0].replace("SELECT", "").strip()
+    for col_alias in select_part.split(","):
+        col_alias = col_alias.strip()
+
+        # Split column and alias
+        if " AS " in col_alias.upper():
+            alias, col = [part.strip() for part in col_alias.split(" AS ")]
+            if "." in alias:
+                alias = alias.split(".")[-1]
+
+        else:
+            col = col_alias
+            alias = col
+        # Ensure unique aliases
+        original_alias = alias
+        count = alias_count.get(original_alias, 0)
+        while alias in column_alias_mapping.keys():
+            count += 1
+            alias = f"{original_alias}_{count}"
+        alias_count[original_alias] = count
+
+        # Map the fully qualified column name to the unique alias
+        column_alias_mapping[alias] = col
+
+    return column_alias_mapping
+
+
 def get_column_alias_mapping(query):
     # Extract columns and their aliases from the query
     column_alias_mapping = {}
